@@ -44,6 +44,6 @@ server.listen(port, () => {
 
 
 //filter with
-//task1: http.request.method == "GET"
+//task1: http.request.method == "POST"
 //task2: http.request.uri contains "secret.txt"
 
