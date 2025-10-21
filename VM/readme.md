@@ -20,3 +20,8 @@ Shutdown the VM:
 vagrant halt
 ```
 Default login: _vagrant:vagrant_
+
+Run provision scripts
+```bash
+vagrant provision
+```
