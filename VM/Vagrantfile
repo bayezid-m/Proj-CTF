@@ -1,15 +1,47 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "kalilinux/rolling"
-  config.vm.box_version = "2023.4.0"
-  config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.synced_folder ".", "/home/vagrant/project"
-  config.vm.provider "virtualbox" do |vb|
-    vb.name = "UbuntuDesktop"
-    vb.gui = true
-    vb.memory = "4096"
-    vb.cpus = 2        
+  # --- Kali Linux VM ---
+  config.vm.define "kali" do |kali|
+    kali.vm.box = "kalilinux/rolling"
+    kali.vm.box_version = "2023.4.0"
+    kali.vm.network "private_network", ip: "192.168.33.10"
+    kali.vm.synced_folder ".", "/home/vagrant/project"
+    kali.vm.provider "virtualbox" do |vb|
+      vb.name = "KaliDesktop"
+      vb.gui = true
+      vb.memory = "4096"
+      vb.cpus = 2
+    end
+
+    kali.ssh.username = "kali"
+    kali.ssh.password = "kali"
+    kali.ssh.insert_key = false
+
+    kali.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get upgrade -y
+      #vscode
+      sudo apt install code-oss
+      #nginx
+      sudo apt-get install -y nginx
+      sudo systemctl enable nginx
+      sudo systemctl start nginx
+    SHELL
   end
-  config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get update -y
-  SHELL
+
+  # --- Ubuntu Server VM ---
+  config.vm.define "ubuntu_server" do |server|
+    server.vm.box = "ubuntu/jammy64"
+    server.vm.network "private_network", ip: "192.168.33.11"
+    server.vm.synced_folder ".", "/home/vagrant/server_project"
+    server.vm.provider "virtualbox" do |vb|
+      vb.name = "UbuntuServer"
+      vb.gui = false
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+    server.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y net-tools
+    SHELL
+  end
 end
