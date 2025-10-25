@@ -26,10 +26,6 @@ vagrant destroy
 ### Default login:
  _vagrant:vagrant_
 
-OR 
-
-_kali:kali_
-
 Run provision scripts
 ```bash
 vagrant provision

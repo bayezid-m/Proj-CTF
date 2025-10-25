@@ -14,8 +14,8 @@ vms:
     guacamole:
       os: linux
       type: gui
-      username: kali
-      password: kali
+      username: vagrant
+      password: vagrant
       keyboard_layout: fi
   - name: server
     image: g23-scenario1
