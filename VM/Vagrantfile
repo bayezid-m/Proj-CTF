@@ -15,12 +15,29 @@ Vagrant.configure("2") do |config|
     kali.vm.provision "shell", inline: <<-SHELL
       sudo apt-get update -y
       sudo apt-get upgrade -y
+      sudo apt-get install -y wget gpg apt-transport-https software-properties-common
       #vscode
-      sudo apt install code-oss
+      sudo rm -f /usr/share/keyrings/packages.microsoft.gpg
+      sudo rm -f /etc/apt/sources.list.d/vscode.list
+      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
+      sudo apt-get update -y
+      sudo apt-get install -y code
       #nginx
       sudo apt-get install -y nginx
       sudo systemctl enable nginx
       sudo systemctl start nginx
+      #Finnish keyboard, not working? 
+      sudo debconf-set-selections <<< "keyboard-configuration keyboard-configuration/layout select Finnish"
+      sudo dpkg-reconfigure -f noninteractive keyboard-configuration
+      sudo setupcon
+      sudo sed -i 's/XKBLAYOUT=".*"/XKBLAYOUT="fi"/' /etc/default/keyboard
+      #make secret file
+      sudo mkdir -p /var/www/html
+      echo "<p>secret123</p>" | sudo tee /var/www/html/secret.html > /dev/null
+      sudo chmod 644 /var/www/html/secret.html
+      # certbot
+      sudo apt-get install -y certbot
     SHELL
   end
 
