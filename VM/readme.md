@@ -19,7 +19,12 @@ Shutdown the VM:
 ```bash
 vagrant halt
 ```
-Default login: _vagrant:vagrant_
+"Full" cleanup
+```bash
+vagrant destroy
+```
+### Default login:
+ _vagrant:vagrant_
 
 Run provision scripts
 ```bash
