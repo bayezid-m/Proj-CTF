@@ -1,29 +1,35 @@
 #!/bin/bash
-HOST=192.168.0.107
-PORT=22
-INTERVAL=2         # seconds
-USER="ubuntu"
-NUM=0;
-MAX_NUM=10;
-
-SSH_OUT=$(ssh -oBatchMode=yes -oConnectTimeout=5 -p "$PORT" "$USER@$HOST" true 2>&1)
-SSH_EXIT=$?
+HOST=192.168.33.10 #ip
+PORT=8000 #port
+INTERVAL=2 #seconds
+USER="ubuntu" #ssh username. User that flag will be sent
+NUM=0; #starting
+MAX_NUM=5; #end
+USERNAME=username; #username for website
+PASSWORD=p4ssw0rd; #password for website
+PASSNUM=1; #adds number to end of password
 
 while (( NUM<MAX_NUM ));do
-SSH_OUT=$(ssh -oBatchMode=yes -oConnectTimeout=5 -p "$PORT" "$USER@$HOST" true 2>&1)
-SSH_EXIT=$?
-if [ $SSH_EXIT -eq 0 ];then
-	echo "SSH onnistui";
+PASSNUM=$((PASSNUM+1))	
+POST_OUT=$(curl -s -H "Content-Type: application/x-www-form-urlencoded"  --data "username=$USERNAME&password=$PASSWORD$PASSNUM" "http://$HOST:$PORT/api/login" )
+POST_EXIT=$?
+if [ $POST_EXIT -eq 0 ];then
+	echo "Post Completed id:$POST_EXIT";
 else
-	if echo "$SSH_OUT" | grep -qi "Permission denied"; then
+	#change this
+	#when wrong password
+	if echo "$POST_OUT" | grep -qi "Permission denied"; then
 		echo "Permission denied $NUM"
-		
-	elif echo "$SSH_OUT" | grep -qi "Connection reset by peer";then
+	#when blocked
+	elif (($POST_EXIT == 56));then
 		echo "Connection reset by peer $NUM"
 		NUM=$((NUM+1))
+	#error
 	else
-		echo "muu $SSH_OUT"
-		
+		echo "else id:$POST_EXIT"
+	
+	
+	
 fi
 
 fi
@@ -31,10 +37,14 @@ fi
 sleep "$INTERVAL"
 done
 
-#change this
-while true; do
+echo "flag sent"
+scp ~/flag.txt "$USER"@"$HOST":~/Desktop/
 
-printf "Flag{YOU_GOT_THIS!!!}\n" | nc -w 2 "$HOST" "$PORT"; 
-	echo "flag sent"
-sleep "$INTERVAL"
 done
+
+
+
+#notes.
+#Remember to add these so ssh does not ask for password:
+#ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "ubuntu@$(hostname)"
+#ssh-copy-id -i ~/.ssh/id_ed25519.pub kayttaja@192.168.1.50
