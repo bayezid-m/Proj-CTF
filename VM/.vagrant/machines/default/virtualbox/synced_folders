@@ -1,0 +1,1 @@
+{"virtualbox":{"/home/vagrant/project":{"guestpath":"/home/vagrant/project","hostpath":"C:/Users/Kasper Ojuva/Desktop/ctf/Proj-CTF/VM/project","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"C:/Users/Kasper Ojuva/Desktop/ctf/Proj-CTF/VM","disabled":false,"__vagrantfile":true}}}
