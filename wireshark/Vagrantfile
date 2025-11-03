@@ -1,0 +1,117 @@
+Vagrant.configure("2") do |config|
+  # --- Kali Linux VM ---
+  config.vm.define "kali" do |kali|
+    kali.vm.box = "kalilinux/rolling"
+    kali.vm.box_version = "2023.4.0"
+    kali.vm.network "private_network", ip: "192.168.33.10"
+    kali.vm.synced_folder ".", "/home/vagrant/project"
+    kali.vm.provider "virtualbox" do |vb|
+      vb.name = "KaliDesktop"
+      vb.gui = true
+      vb.memory = "4096"
+      vb.cpus = 2
+    end
+
+    kali.vm.provision "shell", inline: <<-SHELL
+      set -e  # <--- stop script on first error (important for reliability)
+
+      sudo apt-get update -y
+      sudo apt-get upgrade -y
+      sudo apt-get install -y wget gpg apt-transport-https software-properties-common curl
+
+      # --- VSCode installation ---
+      sudo rm -f /usr/share/keyrings/packages.microsoft.gpg
+      sudo rm -f /etc/apt/sources.list.d/vscode.list
+      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
+      sudo apt-get update -y
+      sudo apt-get install -y code
+
+      # --- Nginx setup ---
+      sudo apt-get install -y nginx
+      sudo systemctl enable nginx
+      sudo systemctl start nginx
+
+      # --- Keyboard config (Finnish) ---
+      sudo debconf-set-selections <<< "keyboard-configuration keyboard-configuration/layout select Finnish"
+      sudo dpkg-reconfigure -f noninteractive keyboard-configuration
+      sudo setupcon
+      sudo sed -i 's/XKBLAYOUT=".*"/XKBLAYOUT="fi"/' /etc/default/keyboard
+
+      # --- Create a simple secret file for testing ---
+      sudo mkdir -p /var/www/html
+      echo "<p>secret123</p>" | sudo tee /var/www/html/secret.html > /dev/null
+      sudo chmod 644 /var/www/html/secret.html
+
+      # --- Certbot (SSL setup tool) ---
+      sudo apt-get install -y certbot
+
+      # NODE.JS SERVER AUTOMATION (Improved)
+
+      # --- Install Node.js (LTS) via official repo for reliability ---
+      curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+      sudo apt-get install -y nodejs
+
+      # --- Wait until synced folder is ready ---
+      while [ ! -f /home/vagrant/project/server.js ]; do
+        echo "Waiting for synced folder to load..."
+        sleep 2
+      done
+
+      # --- Create a systemd service for Node.js server ---
+      echo "[Unit]
+Description=Node.js Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/node /home/vagrant/project/server.js
+Restart=always
+User=vagrant
+Environment=PORT=8000
+WorkingDirectory=/home/vagrant/project
+
+[Install]
+WantedBy=multi-user.target" | sudo tee /etc/systemd/system/node-server.service > /dev/null
+
+      # --- Create a systemd service for client.js ---
+      echo "[Unit]
+Description=Request Sender
+After=node-server.service
+
+[Service]
+ExecStart=/usr/bin/node /home/vagrant/project/client.js
+Restart=always
+User=vagrant
+WorkingDirectory=/home/vagrant/project
+
+[Install]
+WantedBy=multi-user.target" | sudo tee /etc/systemd/system/request-sender.service > /dev/null
+
+      # --- Enable and start both Node.js services ---
+      sudo systemctl daemon-reload
+      sudo systemctl enable node-server request-sender
+      sudo systemctl start node-server request-sender
+
+      echo "Node.js services have been created and started successfully."
+    SHELL
+  end
+
+  # --- Ubuntu Server VM ---
+  config.vm.define "ubuntu_server" do |server|
+    server.vm.box = "ubuntu/jammy64"
+    server.vm.network "private_network", ip: "192.168.33.11"
+    server.vm.synced_folder ".", "/home/vagrant/server_project"
+    server.vm.provider "virtualbox" do |vb|
+      vb.name = "UbuntuServer"
+      vb.gui = false
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+
+    server.vm.provision "shell", inline: <<-SHELL
+      set -e
+      sudo apt-get update -y
+      sudo apt-get install -y net-tools
+    SHELL
+  end
+end
