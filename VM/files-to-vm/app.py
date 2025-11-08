@@ -2,8 +2,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Dummy API key
-API_KEY = "12345-FAKE-API-KEY"
+#Todo: Add apikey
 
 # Dummy weather data for demonstration
 dummy_weather_data = {

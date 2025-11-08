@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# verify_projectX.sh
+
 # Checks git history for a hardcoded APIKEY and verifies that .env is listed in .gitignore
-# Outputs in English.
 
 set -u
 # do not set -e because some commands intentionally return non-zero; handle errors manually
