@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
     kali.vm.box = "kalilinux/rolling"
     kali.vm.box_version = "2023.4.0"
     kali.vm.network "private_network", ip: "192.168.33.10"
-    kali.vm.synced_folder ".", "/home/vagrant/project"
+    kali.vm.synced_folder "files-to-vm", "/home/vagrant/project"
     kali.vm.provider "virtualbox" do |vb|
       vb.name = "KaliDesktop"
       vb.gui = true
@@ -13,32 +13,27 @@ Vagrant.configure("2") do |config|
     end
 
     kali.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update -y
-      sudo apt-get upgrade -y
-      sudo apt-get install -y wget gpg apt-transport-https software-properties-common
       #vscode
-      sudo rm -f /usr/share/keyrings/packages.microsoft.gpg
-      sudo rm -f /etc/apt/sources.list.d/vscode.list
-      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
-      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
-      sudo apt-get update -y
-      sudo apt-get install -y code
+      # sudo apt-get install -y wget gpg apt-transport-https software-properties-common
+      # sudo rm -f /usr/share/keyrings/packages.microsoft.gpg
+      # sudo rm -f /etc/apt/sources.list.d/vscode.list
+      # wget -qO- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
+      # echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
+      # sudo apt-get update -y
+      # sudo apt-get install -y code
       #nginx
       sudo apt-get install -y nginx
       sudo systemctl enable nginx
       sudo systemctl start nginx
-      #Finnish keyboard, not working? 
-      sudo debconf-set-selections <<< "keyboard-configuration keyboard-configuration/layout select Finnish"
-      sudo dpkg-reconfigure -f noninteractive keyboard-configuration
-      sudo setupcon
-      sudo sed -i 's/XKBLAYOUT=".*"/XKBLAYOUT="fi"/' /etc/default/keyboard
       #make secret file
       sudo mkdir -p /var/www/html
       echo "<p>secret123</p>" | sudo tee /var/www/html/secret.html > /dev/null
       sudo chmod 644 /var/www/html/secret.html
       # certbot
-      sudo apt-get install -y certbot
+      #sudo apt-get install -y certbot
     SHELL
+    kali.vm.provision "shell", name: "git-task", privileged: false, path: "./scripts/setup_git.sh"
+    kali.vm.provision "shell", name: "gkeyboard", privileged: false, path: "./scripts/keyboard.sh"
   end
 
   # --- Ubuntu Server VM ---
