@@ -1,0 +1,22 @@
+networks:
+  - name: net1
+    subnet: 192.168.0.0/24
+    port_security: false
+
+network_infrastructure:
+  - connections: net1
+    external_gateway: sandbox
+
+vms:
+  - name: kali
+    image: cyberquest-fall-2025
+    flavor: butca.4-8-50
+    networks:
+      - [net1, 192.168.33.10]
+    guacamole:
+      os: linux
+      type: gui
+      keyboard_layout: fi
+      username: kali
+      password: kali
+      sftp: false
