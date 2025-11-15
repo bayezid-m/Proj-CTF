@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-cd /home/vagrant/project/git-task
+cd /home/vagrant/project
 
 # Check if .git exists in the project root
 if [ -d ".git" ]; then
