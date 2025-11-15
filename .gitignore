@@ -1,5 +1,5 @@
 VM/.vagrant
+**/.git/
 
 # Git task
-VM/files-to-vm/git-task/.git
 VM/files-to-vm/git-task/.gitignore
