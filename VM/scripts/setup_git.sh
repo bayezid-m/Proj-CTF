@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-cd /home/vagrant/project
+cd /home/vagrant/project/git-task
 
 # Check if .git exists in the project root
 if [ -d ".git" ]; then
@@ -18,7 +18,8 @@ fi
 git init
 
 # Configure Git username
-git config user.name "Kalma Vakinen"
+git config --global user.name "Kalma Vakinen"
+git config --global user.email "kalma.valkinen@foo.bar"
 
 git add app.py
 git commit -m "Initial commit"

@@ -13,46 +13,7 @@ Vagrant.configure("2") do |config|
     end
 
     kali.vm.provision "shell", inline: <<-SHELL
-      sudo apt update -y
-      
-      # Snort dependencies
-      sudo apt install -y \
-        build-essential \
-        libpcap-dev \
-        libpcre3-dev \
-        libdumbnet-dev \
-        bison flex \
-        zlib1g-dev \
-        liblzma-dev \
-        openssl libssl-dev \
-        libnghttp2-dev \
-        libluajit-5.1-dev \
-        libtirpc-dev \
-        libtool autoconf \
-        pkg-config automake
-
-      # Snort
-      cd ~/Downloads
-      wget https://www.snort.org/downloads/snort/daq-2.0.7.tar.gz
-      tar -xvzf daq-2.0.7.tar.gz
-      cd daq-2.0.7
-      ./configure
-      make
-      sudo make install
-
-      cd ~/Downloads
-      wget https://www.snort.org/downloads/snort/snort-2.9.20.tar.gz
-      tar -xvzf snort-2.9.20.tar.gz
-      cd snort-2.9.20
-
-      sudo ln -s /usr/include/tirpc/rpc /usr/include/rpc
-
-      ./configure CFLAGS="-I/usr/include/tirpc" LDFLAGS="-L/usr/lib/x86_64-linux-gnu -ltirpc" --enable-sourcefire --with-daq=/usr/local
-      make
-      sudo make install
-
-      echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/local.conf
-      sudo ldconfig
+      sudo apt-get update -y
 
       #vscode
       # sudo apt-get install -y wget gpg apt-transport-https software-properties-common
@@ -62,19 +23,23 @@ Vagrant.configure("2") do |config|
       # echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
       # sudo apt-get update -y
       # sudo apt-get install -y code
+
       #nginx
       sudo apt-get install -y nginx
       sudo systemctl enable nginx
       sudo systemctl start nginx
+
       #make secret file
       sudo mkdir -p /var/www/html
       echo "<p>secret123</p>" | sudo tee /var/www/html/secret.html > /dev/null
       sudo chmod 644 /var/www/html/secret.html
+
       # certbot
       #sudo apt-get install -y certbot
     SHELL
-    kali.vm.provision "shell", name: "git-task", privileged: false, path: "./scripts/setup_git.sh"
     kali.vm.provision "shell", name: "gkeyboard", privileged: false, path: "./scripts/keyboard.sh"
+    kali.vm.provision "shell", name: "snort", privileged: false, path: "./scripts/snort.sh"
+    kali.vm.provision "shell", name: "git-task", privileged: false, path: "./scripts/setup_git.sh"
   end
 
   # --- Ubuntu Server VM ---
