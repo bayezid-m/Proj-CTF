@@ -4,8 +4,8 @@ Vagrant.configure("2") do |config|
     kali.vm.box = "kalilinux/rolling"
     kali.vm.box_version = "2025.3.0"
     kali.vm.network "private_network", ip: "192.168.33.10"
-    kali.vm.synced_folder "git-task", "/home/vagrant/project"
-    kali.vm.synced_folder "wireshark", "/home/vagrant/server"
+    kali.vm.synced_folder "git-task", "/home/vagrant/project" # git task
+    kali.vm.synced_folder "wireshark", "/home/vagrant/server" # wireshark server
     kali.vm.provider "virtualbox" do |vb|
       vb.name = "KaliDesktop"
       vb.gui = true
@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
       # certbot
       #sudo apt-get install -y certbot
     SHELL
-    # kali.vm.provision "shell", name: "gkeyboard", privileged: false, path: "./scripts/keyboard.sh"
+    kali.vm.provision "shell", name: "gkeyboard", privileged: false, path: "./scripts/keyboard.sh"
     kali.vm.provision "shell", name: "snort", privileged: false, path: "./scripts/snort.sh"
     kali.vm.provision "shell", name: "git-task", privileged: false, path: "./scripts/setup_git.sh"
   end
@@ -46,7 +46,7 @@ Vagrant.configure("2") do |config|
   # --- Ubuntu Server VM ---
   config.vm.define "ubuntu_server" do |server|
     server.vm.box = "ubuntu/jammy64"
-    server.vm.network "private_network", ip: "192.168.33.11"
+    server.vm.network "public_network", ip: "192.168.33.11"
     server.vm.synced_folder "ubuntu", "/home/vagrant/server_project"
     server.vm.provider "virtualbox" do |vb|
       vb.name = "UbuntuServer"
@@ -58,6 +58,5 @@ Vagrant.configure("2") do |config|
       sudo apt-get update -y
       sudo apt-get install -y net-tools
     SHELL
-    server.vm.provision "shell", name: "setup-atk", privileged: false, path: "./ubuntu/atk.sh"
   end
 end

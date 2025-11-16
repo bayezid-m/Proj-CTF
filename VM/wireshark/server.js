@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const port = 8000;
-const ip = "192.168.0.107";
+const ip = "192.168.33.10";
 
 const server = http.createServer((req, res) => {
   if (req.method === "GET" && req.url === "/") {
