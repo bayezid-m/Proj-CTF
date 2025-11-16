@@ -5,6 +5,8 @@ Vagrant.configure("2") do |config|
     kali.vm.box_version = "2025.3.0"
     kali.vm.network "private_network", ip: "192.168.33.10"
     kali.vm.synced_folder "git-task", "/home/vagrant/project" # git task
+    kali.vm.synced_folder "nginx-task", "/home/vagrant/https" # nginx task
+    kali.vm.synced_folder "defaultNginxConf", "/etc/defaultnginxconf" # nginx task
     kali.vm.synced_folder "wireshark", "/home/vagrant/server" # wireshark server
     kali.vm.provider "virtualbox" do |vb|
       vb.name = "KaliDesktop"
@@ -34,9 +36,14 @@ Vagrant.configure("2") do |config|
       sudo mkdir -p /var/www/html
       echo "<p>secret123</p>" | sudo tee /var/www/html/secret.html > /dev/null
       sudo chmod 644 /var/www/html/secret.html
+      echo "<p>this is unsafe http site</p><p>at night, the server logs whisper when no one is watching...</p>" | sudo tee /var/www/html/index.html > /dev/null
+      sudo chmod 644 /var/www/html/index.html
 
-      # certbot
-      #sudo apt-get install -y certbot
+      # certbot, or localhost counterpart mkcert
+      wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64
+      sudo mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert
+      sudo chmod +x /usr/local/bin/mkcert
+
     SHELL
     kali.vm.provision "shell", name: "gkeyboard", privileged: false, path: "./scripts/keyboard.sh"
     kali.vm.provision "shell", name: "snort", privileged: false, path: "./scripts/snort.sh"
