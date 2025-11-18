@@ -19,3 +19,8 @@ def secret_file():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
+
+
+#filter with
+#task1: http.request.method == "POST"
+#task2: http && ip.addr == 192.168.33.10
