@@ -2,11 +2,11 @@
 
 # Check if password authentication is enabled
 
-nopasswd="PasswordAuthentication no"
+noPasswd="PasswordAuthentication no"
 
-checkpasswdauth=$(cat /etc/ssh/sshd_config | grep "PasswordAuthentication no")
+checkPasswdAuth=$(cat /etc/ssh/sshd_config | grep "PasswordAuthentication no")
 
-if [[ $checkpasswdauth == $nopasswd ]]; then
+if [[ $checkPasswdAuth == $noPasswd ]]; then
     echo "Success! Flag: asdf"
 else
     echo "Failure"
@@ -14,14 +14,34 @@ fi
 
 # Check if authentication is allowed only for user kali
 
-allowedusers="AllowUsers kali"
+allowedUsers="AllowUsers kali"
 
-checkallowedusers=$(cat /etc/ssh/sshd_config | grep "AllowUsers kali")
+checkAllowedUsers=$(cat /etc/ssh/sshd_config | grep "AllowUsers kali")
 
-if [[ $checkallowedusers == $allowedusers ]]; then
+if [[ $checkAllowedUsers == $allowedUsers ]]; then
     echo "Success! Flag: dfgh"
 else
     echo "Failure"
 fi
 
-# TODO: SSH keys
+# Check if ssh keys have been set up using correct email
+
+sshEmail="your_email@example.com"
+checkServerSshEmail=$(cat /home/kali/.ssh/authorized_keys | grep -o "your_email@example.com")
+
+if [[ $checkServerSshEmail == $sshEmail ]]; then
+    echo "Success! Flag: epwroit"
+else
+    echo "Failure"
+fi
+
+# Check that SSH keys have been set up properly
+
+# DOESN'T WORK FOR NOW
+
+# clientPubKeyFile=$(ls /home/kali/.ssh | grep "pub")
+
+# checkHostPubKeyFile=$(cat /home/kali/.ssh/authorized_keys | grep -o $clientPubKeyFile)
+
+# echo $clientPubKeyFile
+# echo $checkHostPubKeyFile
