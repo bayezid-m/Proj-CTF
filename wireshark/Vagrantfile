@@ -1,10 +1,15 @@
 Vagrant.configure("2") do |config|
-  # --- Kali Linux VM ---
+
+  # --- Kali Linux VM ------
+
   config.vm.define "kali" do |kali|
     kali.vm.box = "kalilinux/rolling"
     kali.vm.box_version = "2023.4.0"
     kali.vm.network "private_network", ip: "192.168.33.10"
+
+    # Sync current local folder → /home/vagrant/project
     kali.vm.synced_folder ".", "/home/vagrant/project"
+
     kali.vm.provider "virtualbox" do |vb|
       vb.name = "KaliDesktop"
       vb.gui = true
@@ -13,94 +18,78 @@ Vagrant.configure("2") do |config|
     end
 
     kali.vm.provision "shell", inline: <<-SHELL
-      set -e  # <--- stop script on first error (important for reliability)
+      set -e
 
+      echo "[*] Updating packages..."
       sudo apt-get update -y
-      sudo apt-get upgrade -y
-      sudo apt-get install -y wget gpg apt-transport-https software-properties-common curl
+      sudo apt-get install -y python3 python3-pip
 
-      # --- VSCode installation ---
-      sudo rm -f /usr/share/keyrings/packages.microsoft.gpg
-      sudo rm -f /etc/apt/sources.list.d/vscode.list
-      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
-      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
-      sudo apt-get update -y
-      sudo apt-get install -y code
+      echo "[*] Installing Python packages..."
+      pip3 install flask requests
 
-      # --- Nginx setup ---
-      sudo apt-get install -y nginx
-      sudo systemctl enable nginx
-      sudo systemctl start nginx
+      echo "[*] Copying project files into /home/vagrant/app..."
+      mkdir -p /home/vagrant/app
+      cp /home/vagrant/project/server.py /home/vagrant/app/server.py
+      cp /home/vagrant/project/client.py /home/vagrant/app/client.py
+      cp /home/vagrant/project/secret.txt /home/vagrant/app/secret.txt
+      chown -R vagrant:vagrant /home/vagrant/app
 
-      # --- Keyboard config (Finnish) ---
-      sudo debconf-set-selections <<< "keyboard-configuration keyboard-configuration/layout select Finnish"
-      sudo dpkg-reconfigure -f noninteractive keyboard-configuration
-      sudo setupcon
-      sudo sed -i 's/XKBLAYOUT=".*"/XKBLAYOUT="fi"/' /etc/default/keyboard
-
-      # --- Create a simple secret file for testing ---
-      sudo mkdir -p /var/www/html
-      echo "<p>secret123</p>" | sudo tee /var/www/html/secret.html > /dev/null
-      sudo chmod 644 /var/www/html/secret.html
-
-      # --- Certbot (SSL setup tool) ---
-      sudo apt-get install -y certbot
-
-      # NODE.JS SERVER AUTOMATION (Improved)
-
-      # --- Install Node.js (LTS) via official repo for reliability ---
-      curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-      sudo apt-get install -y nodejs
-
-      # --- Wait until synced folder is ready ---
-      while [ ! -f /home/vagrant/project/server.js ]; do
-        echo "Waiting for synced folder to load..."
-        sleep 2
-      done
-
-      # --- Create a systemd service for Node.js server ---
-      echo "[Unit]
-Description=Node.js Server
+      echo "[*] Creating flask-server.service..."
+      cat > /etc/systemd/system/flask-server.service <<EOF
+[Unit]
+Description=Flask test server
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/node /home/vagrant/project/server.js
-Restart=always
+Type=simple
 User=vagrant
-Environment=PORT=8000
-WorkingDirectory=/home/vagrant/project
+WorkingDirectory=/home/vagrant/app
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /home/vagrant/app/server.py
+Restart=always
+RestartSec=5
 
 [Install]
-WantedBy=multi-user.target" | sudo tee /etc/systemd/system/node-server.service > /dev/null
+WantedBy=multi-user.target
+EOF
 
-      # --- Create a systemd service for client.js ---
-      echo "[Unit]
-Description=Request Sender
-After=node-server.service
+      echo "[*] Creating flask-client.service..."
+      cat > /etc/systemd/system/flask-client.service <<EOF
+[Unit]
+Description=Client auto-sending request to Flask server
+After=network-online.target flask-server.service
+Wants=network-online.target flask-server.service
 
 [Service]
-ExecStart=/usr/bin/node /home/vagrant/project/client.js
-Restart=always
+Type=simple
 User=vagrant
-WorkingDirectory=/home/vagrant/project
+WorkingDirectory=/home/vagrant/app
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /home/vagrant/app/client.py
+Restart=always
+RestartSec=5
 
 [Install]
-WantedBy=multi-user.target" | sudo tee /etc/systemd/system/request-sender.service > /dev/null
+WantedBy=multi-user.target
+EOF
 
-      # --- Enable and start both Node.js services ---
-      sudo systemctl daemon-reload
-      sudo systemctl enable node-server request-sender
-      sudo systemctl start node-server request-sender
+      echo "[*] Enabling and starting systemd services..."
+      systemctl daemon-reload
+      systemctl enable flask-server.service
+      systemctl enable flask-client.service
+      systemctl start flask-server.service
+      systemctl start flask-client.service
 
-      echo "Node.js services have been created and started successfully."
+      echo "[*] Kali setup complete!"
     SHELL
   end
+
 
   # --- Ubuntu Server VM ---
   config.vm.define "ubuntu_server" do |server|
     server.vm.box = "ubuntu/jammy64"
     server.vm.network "private_network", ip: "192.168.33.11"
-    server.vm.synced_folder ".", "/home/vagrant/server_project"
+
     server.vm.provider "virtualbox" do |vb|
       vb.name = "UbuntuServer"
       vb.gui = false
@@ -109,9 +98,9 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/request-sender.servic
     end
 
     server.vm.provision "shell", inline: <<-SHELL
-      set -e
       sudo apt-get update -y
       sudo apt-get install -y net-tools
     SHELL
   end
+
 end
