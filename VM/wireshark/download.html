@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Task 2 - File Download</title>
+</head>
+<body>
+  <h1>Task 2: File Download</h1>
+  <p>Click the button below to download the secret file:</p>
+
+
+  <p>Youou can download text file by clicking the download button</p>
+  <button id="jsDownload">Download via JS fetch</button>
+
+  <script>
+    document.getElementById("jsDownload").addEventListener("click", () => {
+      window.open("http://192.168.33.10:8000/secret.txt", "_blank");
+    });
+  </script>
+</body>
+</html>

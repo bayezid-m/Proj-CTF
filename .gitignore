@@ -1,1 +1,8 @@
 VM/.vagrant
+**/.git/
+
+# Git task
+VM/git-task/.gitignore
+
+VM/nginx-task/localhost-key.pem
+VM/nginx-task/localhost.pem
