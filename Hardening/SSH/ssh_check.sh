@@ -2,46 +2,47 @@
 
 # Check if password authentication is enabled
 
+isPasswordAuth=0
 noPasswd="PasswordAuthentication no"
 
 checkPasswdAuth=$(cat /etc/ssh/sshd_config | grep "PasswordAuthentication no")
 
 if [[ $checkPasswdAuth == $noPasswd ]]; then
-    echo "Success! Flag: asdf"
+    echo "Success! Password authentication is set up correctly!"
+    isPasswordAuth=1
 else
-    echo "Failure"
+    echo "Failure! Password authentication is not set up correctly!"
 fi
 
 # Check if authentication is allowed only for user kali
 
+isUserAuth=0
 allowedUsers="AllowUsers kali"
 
 checkAllowedUsers=$(cat /etc/ssh/sshd_config | grep "AllowUsers kali")
 
 if [[ $checkAllowedUsers == $allowedUsers ]]; then
-    echo "Success! Flag: dfgh"
+    echo "Success! User authentication is set up correctly!"
+    isUserAuth=1
 else
-    echo "Failure"
+    echo "Failure! User authentication is not set up correctly!"
 fi
 
-# Check if ssh keys have been set up using correct email
+# Check if client and server keys match
 
-sshEmail="your_email@example.com"
-checkServerSshEmail=$(cat /home/kali/.ssh/authorized_keys | grep -o "your_email@example.com")
+isSshKeys=0
+publicKey=$(cat /home/kali/.ssh/id_ed25519.pub)
+authorizedKeys=$(cat /home/kali/.ssh/authorized_keys)
 
-if [[ $checkServerSshEmail == $sshEmail ]]; then
-    echo "Success! Flag: epwroit"
+if [[ $publicKey == "" || $authorizedKeys == "" ]]; then
+    echo "Failure! SSH keys are not configured correctly!"
+elif [[ $publicKey == $authorizedKeys ]]; then
+    echo "Success! SSH keys are configured correctly!"
+    isSshKeys=1
 else
-    echo "Failure"
+    echo "Failure! SSH keys are not configured correctly!"
 fi
 
-# Check that SSH keys have been set up properly
-
-# DOESN'T WORK FOR NOW
-
-# clientPubKeyFile=$(ls /home/kali/.ssh | grep "pub")
-
-# checkHostPubKeyFile=$(cat /home/kali/.ssh/authorized_keys | grep -o $clientPubKeyFile)
-
-# echo $clientPubKeyFile
-# echo $checkHostPubKeyFile
+if [[ $isPasswordAuth == 1 && $isUserAuth == 1 && $isSshKeys == 1 ]]; then
+    echo "Flag: gkjhfdlkgj"
+fi
