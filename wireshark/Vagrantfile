@@ -1,0 +1,106 @@
+Vagrant.configure("2") do |config|
+
+  # --- Kali Linux VM ------
+
+  config.vm.define "kali" do |kali|
+    kali.vm.box = "kalilinux/rolling"
+    kali.vm.box_version = "2023.4.0"
+    kali.vm.network "private_network", ip: "192.168.33.10"
+
+    # Sync current local folder → /home/vagrant/project
+    kali.vm.synced_folder ".", "/home/vagrant/project"
+
+    kali.vm.provider "virtualbox" do |vb|
+      vb.name = "KaliDesktop"
+      vb.gui = true
+      vb.memory = "4096"
+      vb.cpus = 2
+    end
+
+    kali.vm.provision "shell", inline: <<-SHELL
+      set -e
+
+      echo "[*] Updating packages..."
+      sudo apt-get update -y
+      sudo apt-get install -y python3 python3-pip
+
+      echo "[*] Installing Python packages..."
+      pip3 install flask requests
+
+      echo "[*] Copying project files into /home/vagrant/app..."
+      mkdir -p /home/vagrant/app
+      cp /home/vagrant/project/server.py /home/vagrant/app/server.py
+      cp /home/vagrant/project/client.py /home/vagrant/app/client.py
+      cp /home/vagrant/project/secret.txt /home/vagrant/app/secret.txt
+      chown -R vagrant:vagrant /home/vagrant/app
+
+      echo "[*] Creating flask-server.service..."
+      cat > /etc/systemd/system/flask-server.service <<EOF
+[Unit]
+Description=Flask test server
+After=network.target
+
+[Service]
+Type=simple
+User=vagrant
+WorkingDirectory=/home/vagrant/app
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /home/vagrant/app/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+      echo "[*] Creating flask-client.service..."
+      cat > /etc/systemd/system/flask-client.service <<EOF
+[Unit]
+Description=Client auto-sending request to Flask server
+After=network-online.target flask-server.service
+Wants=network-online.target flask-server.service
+
+[Service]
+Type=simple
+User=vagrant
+WorkingDirectory=/home/vagrant/app
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /home/vagrant/app/client.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+      echo "[*] Enabling and starting systemd services..."
+      systemctl daemon-reload
+      systemctl enable flask-server.service
+      systemctl enable flask-client.service
+      systemctl start flask-server.service
+      systemctl start flask-client.service
+
+      echo "[*] Kali setup complete!"
+    SHELL
+  end
+
+
+  # --- Ubuntu Server VM ---
+  config.vm.define "ubuntu_server" do |server|
+    server.vm.box = "ubuntu/jammy64"
+    server.vm.network "private_network", ip: "192.168.33.11"
+
+    server.vm.provider "virtualbox" do |vb|
+      vb.name = "UbuntuServer"
+      vb.gui = false
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+
+    server.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y net-tools
+    SHELL
+  end
+
+end
