@@ -19,10 +19,43 @@ int remove_path(const char *path) {
     return system(cmd);
 }
 
+char *make_api_key_line() {
+    char *s = malloc(23 + 1);
+    if (!s) return NULL;
+
+    s[0]  = 'A';
+    s[5]  = 'Y';
+    s[1]  = 'P';
+    s[2]  = 'I';
+    s[3]  = 'K';
+    s[4]  = 'E';
+
+    s[12] = 'd';
+    s[6]  = '=';
+    s[7]  = '1';
+    s[10] = '3';
+    s[11] = '3';
+    s[9]  = '4';
+    s[8]  = 's';
+    s[13] = 'e';
+    s[14] = 'd';
+    s[18] = 'p';
+    s[15] = 'p';
+    s[17] = 'o';
+    s[16] = 'e';
+    s[20] = 'e';
+    s[19] = 'l';
+
+    s[21] = '\n';
+    s[22] = '\0';
+
+    return s;
+}
+
 int main(void) {
-    // Change directory to /home/vagrant/project
-    if (chdir("/home/vagrant/project") != 0) {
-        perror("Failed to change directory to /home/vagrant/project");
+    // Change directory to /home/kali/project
+    if (chdir("/home/kali/project") != 0) {
+        perror("Failed to change directory to /home/kali/project");
         return 1;
     }
 
@@ -74,11 +107,20 @@ int main(void) {
         perror("Failed to create .env file");
         return 1;
     }
-    if (fprintf(f, "APIKEY=1s33de4dpeople\n") < 0) {
-        perror("Failed to write to .env file");
+    char *api_line = make_api_key_line();
+    if (!api_line) {
+        perror("Failed to allocate API key string");
         fclose(f);
         return 1;
     }
+
+    if (fprintf(f, "%s", api_line) < 0) {
+        perror("Failed to write to .env file");
+        free(api_line);
+        fclose(f);
+        return 1;
+    }
+    free(api_line);
     fclose(f);
 
     // Stage and commit the .env file
