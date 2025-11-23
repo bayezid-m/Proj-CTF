@@ -9,8 +9,8 @@ active="Status: active"
 inactive="Status: inactive"
 
 # Get firewall status
-statusActive=$(ufw status | grep -o "$active")
-statusInactive=$(ufw status | grep -o "$inactive")
+statusActive=$(ufw status | grep -o "$active" 2>/dev/null)
+statusInactive=$(ufw status | grep -o "$inactive" 2>/dev/null)
 
 if [[ $statusActive == $active ]]; then
     echo "Firewall is active"
@@ -21,13 +21,14 @@ else
     echo "Firewall is not set up"
 fi
 
+# Check firewall configuration
 defaultDeny="Default: deny (incoming)"
 allowNginx="443/tcp (Nginx HTTPS)      ALLOW IN"
 limitSsh="22/tcp                     LIMIT IN"
 
-isDefaultDeny=$(ufw status verbose | grep -o "$defaultDeny")
-isAllowNginx=$(ufw status verbose | grep -o "$allowNginx")
-isLimitSsh=$(ufw status verbose | grep -o "$limitSsh")
+isDefaultDeny=$(ufw status verbose | grep -o "$defaultDeny" 2>/dev/null)
+isAllowNginx=$(ufw status verbose | grep -o "$allowNginx" 2>/dev/null)
+isLimitSsh=$(ufw status verbose | grep -o "$limitSsh" 2>/dev/null)
 
 if [[ $isDefaultDeny == $defaultDeny && $isAllowNginx == $allowNginx && $isLimitSsh == $limitSsh ]]; then
     echo "Firewall is configured"
@@ -36,6 +37,7 @@ else
     echo "Firewall is not configured"
 fi
 
+# On success, give player the flag
 if [[ $isActive == 1 && $isConfigured == 1 ]]; then
-    echo "Flag: asdfasdg"
+    echo "Flag: YouAreNext"
 fi
