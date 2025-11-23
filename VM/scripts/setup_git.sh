@@ -18,7 +18,8 @@ fi
 git init
 
 # Configure Git username
-git config user.name "Kalma Vakinen"
+git config --global user.name "Kalma Vakinen"
+git config --global user.email "kalma.valkinen@foo.bar"
 
 git add app.py
 git commit -m "Initial commit"

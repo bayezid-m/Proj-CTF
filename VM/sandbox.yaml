@@ -1,24 +1,22 @@
 networks:
   - name: net1
     subnet: 192.168.0.0/24
-    port_security: no
+    port_security: false
+
 network_infrastructure:
-  - connections: [net1]
+  - connections: net1
     external_gateway: sandbox
+
 vms:
-  - name: kali-linux
-    image: kali-linux-24-2
-    flavor: butca.4-4-40
+  - name: kali
+    image: cyberquest-fall-2025
+    flavor: butca.4-8-50
     networks:
-      - [net1, 192.168.0.20]
+      - [net1, 192.168.33.10]
     guacamole:
       os: linux
       type: gui
-      username: vagrant
-      password: vagrant
       keyboard_layout: fi
-  - name: server
-    image: g23-scenario1
-    flavor: butca.2-4-40
-    networks:
-      - [net1, 192.168.0.10]
+      username: kali
+      password: kali
+      sftp: false

@@ -1,5 +1,5 @@
 #!/bin/bash
-HOST=192.168.0.107 #ip
+HOST=192.168.33.10 #ip
 PORT=8000 #port
 INTERVAL=2 #seconds
 USER="ubuntu" #ssh username. User that flag will be sent
