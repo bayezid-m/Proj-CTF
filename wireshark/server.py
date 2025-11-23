@@ -1,9 +1,10 @@
-from flask import Flask, request, send_from_directory
-import os
+from flask import Flask, request, Response
+import requests
+
+UBUNTU_FILE_URL = "http://192.168.0.20:9001/secret.txt"
 
 app = Flask(__name__)
 
-# Task 1: Handle POST request
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_data(as_text=True)
@@ -11,16 +12,10 @@ def login():
     print("Body:", data)
     return "OK", 200
 
-# Task 2: Serve secret.txt
 @app.route('/secret.txt', methods=['GET'])
-def secret_file():
-    directory = os.path.dirname(os.path.abspath(__file__))
-    return send_from_directory(directory, 'secret.txt')
+def secret_proxy():
+    r = requests.get(UBUNTU_FILE_URL)
+    return Response(r.content, mimetype="text/plain")
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
-
-
-#filter with
-#task1: http.request.method == "POST"
-#task2: http && ip.addr == 192.168.33.10
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)
