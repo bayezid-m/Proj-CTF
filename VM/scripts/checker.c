@@ -20,6 +20,27 @@ void run_command(const char *cmd, char *output) {
     pclose(fp);
 }
 
+char *make_flag_string() {
+    char *s = malloc(13);
+    if (!s) return NULL;
+
+    s[0]='F';
+    s[11]='E';
+    s[1]='L';
+    s[4]=':';
+    s[7]='N';
+    s[2]='A';
+    s[6]='U';
+    s[5]=' ';
+    s[9]='A';
+    s[8]='S';
+    s[3]='G'; 
+    s[10]='F';
+    s[12]='\0'; // "\n" is added when printing
+
+    return s;
+}
+
 int main() {
     char out_http[BUF_SIZE];
     char out_https[BUF_SIZE];
@@ -74,7 +95,13 @@ int main() {
     printf("\n[*] Final result:\n");
 
     if (check_http_ok && check_https_ok && check_secret_ok) {
-        printf("FLAG: UNSAFE\n");
+        char *flag = make_flag_string();
+        if (flag) {
+            printf("%s\n", flag);
+            free(flag);
+        } else {
+            printf("Memory error\n");
+        }
     } else {
         printf("Some checks failed. No flag for you.\n");
     }
