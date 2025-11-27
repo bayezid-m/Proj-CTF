@@ -63,11 +63,11 @@ int main() {
     printf("✔️ Removed localhost.pem and localhost-key.pem files\n");
 
     printf("[*] Reloading nginx...\n");
-    int ret_reload = system("sudo systemctl reload nginx");
+    int ret_reload = system("sudo systemctl restart nginx");
     if (ret_reload != 0) {
-        fprintf(stderr, "Error reloading nginx\n");
+        fprintf(stderr, "Error restarting nginx\n");
     } else {
-        printf("✔️ nginx reloaded successfully\n");
+        printf("✔️ nginx restarting successfully\n");
     }
 
     printf("\nReset complete.\n");
