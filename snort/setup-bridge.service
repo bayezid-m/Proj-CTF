@@ -1,0 +1,12 @@
+[Unit]
+Description=Run custom bridge setup commands
+After=network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/setup_bridge.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
