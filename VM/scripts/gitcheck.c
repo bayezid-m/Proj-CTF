@@ -3,6 +3,8 @@
 #include <string.h>
 
 #define MAX_COMMITS_TO_SHOW 10
+#define TARGET_API "APIKEY=1s433dedpeople"
+
 
 void info(const char *msg)  { printf("%s\n", msg); }
 void error(const char *msg) { printf("ERROR: %s\n", msg); }
@@ -101,7 +103,7 @@ int main(void) {
     while (fgets(commit, sizeof(commit), fp)) {
         commit[strcspn(commit, "\n")] = 0;  // strip newline
         char cmd[1024];
-        snprintf(cmd, sizeof(cmd), "git grep -F --quiet -- \"%s\" %s", target_api, commit);
+        snprintf(cmd, sizeof(cmd), "git grep -F --quiet -- \"%s\" %s", TARGET_API, commit);
         int ret = system(cmd);
         if (ret == 0) {  // found
             found_count++;
