@@ -1,8 +1,7 @@
 #! /usr/bin/bash
 
-success=0
-isActive=0
-isConfigured=0
+# If something fails, set this to 0
+success=1
 
 # Possible outputs of command ufw status
 active="Status: active"
@@ -13,12 +12,16 @@ statusActive=$(ufw status 2>/dev/null | grep -o "$active" 2>/dev/null)
 statusInactive=$(ufw status 2>/dev/null | grep -o "$inactive" 2>/dev/null)
 
 if [[ $statusActive == $active ]]; then
-    echo "Firewall is active"
-    isActive=1
+    echo ""
+    echo "Success! Firewall is active!"
 elif [[ $statusInactive == $inactive ]]; then
-    echo "Firewall is inactive"
+    echo ""
+    echo "Failure! Firewall is inactive!"
+    success=0
 else
-    echo "Firewall is not set up"
+    echo ""
+    echo "Failure! Ufw is not installed!"
+    success=0
 fi
 
 # Check firewall configuration
@@ -30,14 +33,38 @@ isDefaultDeny=$(ufw status verbose 2>/dev/null | grep -o "$defaultDeny" 2>/dev/n
 isAllowNginx=$(ufw status verbose 2>/dev/null | grep -o "$allowNginx" 2>/dev/null)
 isLimitSsh=$(ufw status verbose 2>/dev/null | grep -o "$limitSsh" 2>/dev/null)
 
-if [[ $isDefaultDeny == $defaultDeny && $isAllowNginx == $allowNginx && $isLimitSsh == $limitSsh ]]; then
-    echo "Firewall is configured"
-    isConfigured=1
+if [[ $isDefaultDeny == $defaultDeny ]]; then
+    echo ""
+    echo "Success! Default connection policy is configured correctly!"
 else
-    echo "Firewall is not configured"
+    echo ""
+    echo "Failure! Default connection policy is not configured correctly!"
+    success=0
+fi
+if [[ $isAllowNginx == $allowNginx ]]; then
+    echo ""
+    echo "Success! Policy for Nginx is configured correctly!"
+else
+    echo ""
+    echo "Failure! Policy for Nginx is not configured correctly!"
+    success=0
+fi
+if [[ $isLimitSsh == $limitSsh ]]; then
+    echo ""
+    echo "Success! Policy for SSH is configured correctly!"
+else
+    echo ""
+    echo "Failure! Policy for SSH is not configured correctly!"
+    success=0
 fi
 
 # On success, give player the flag
-if [[ $isActive == 1 && $isConfigured == 1 ]]; then
+if [[ $success == 1 ]]; then
+    echo ""
+    echo "Success! Firewall is configured correctly!"
+    echo ""
     echo "Flag: YouAreNext"
+else
+    echo ""
+    echo "Failure! Firewall is not configured correctly!"
 fi
