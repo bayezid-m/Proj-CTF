@@ -1,0 +1,13 @@
+[Unit]
+Description=Kali CTF Python Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kali/.CTF/server
+ExecStart=/usr/bin/python3 /home/kali/.CTF/server/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
