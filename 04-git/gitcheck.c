@@ -10,37 +10,6 @@ void info(const char *msg)  { printf("%s\n", msg); }
 void error(const char *msg) { printf("ERROR: %s\n", msg); }
 void ok(const char *msg)    { printf("OK: %s\n", msg); }
 
-// Build the TARGET_API string dynamically
-char *make_target_api() {
-    char *s = malloc(23);
-    if (!s) return NULL;
-
-    s[6]  = '=';
-    s[2]  = 'I';
-    s[3]  = 'K';
-    s[1]  = 'P';
-    s[4]  = 'E';
-    s[8]  = 's';
-    s[10] = '3';
-    s[7]  = '1';
-    s[12] = 'e';
-    s[9]  = '3';
-    s[11] = 'd';
-    s[14] = 'd';
-    s[13] = '4';
-    s[0]  = 'A';
-    s[20] = 'e';
-    s[16] = 'e';
-    s[19] = 'l';
-    s[15] = 'p';
-    s[17] = 'o';
-    s[18] = 'p';
-    s[5]  = 'Y';
-    s[21] = '\0';
-
-    return s;
-}
-
 // Build the flag string dynamically
 char *make_flag() {
     char *s = malloc(19);
@@ -75,16 +44,9 @@ int main(void) {
     int api_issue = 0;
     int gitignore_ok = 1;
 
-    char *target_api = make_target_api();
-    if (!target_api) {
-        error("Memory allocation failed");
-        return 1;
-    }
-
     // 1. Verify we are in a git repository
     if (system("git rev-parse --git-dir > /dev/null 2>&1") != 0) {
         error("This directory is not a git repository. Run from the repository root.");
-        free(target_api);
         return 2;
     }
 
@@ -94,7 +56,6 @@ int main(void) {
     fp = popen("git rev-list --all", "r");
     if (!fp) {
         error("Failed to run git rev-list");
-        free(target_api);
         return 3;
     }
 
@@ -167,7 +128,6 @@ int main(void) {
             printf("FLAG: %s \n", flag);
             free(flag);
         }
-        free(target_api);
         return 0;
     } else {
         printf("PROBLEM: repository did not pass verification.\n");
@@ -179,6 +139,5 @@ int main(void) {
         }
         printf("Please fix issues and try again.\n");
         return 3;
-        free(target_api);
     }
 }

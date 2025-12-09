@@ -1,5 +1,7 @@
 # G23 CyberQuest
 
+*Note Vagrant was only used on development phase* 
+
 ## Vagrant
 * How to Install
 * How to Use
